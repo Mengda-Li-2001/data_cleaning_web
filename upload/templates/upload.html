@@ -1,7 +1,25 @@
 <!DOCTYPE html>
 <html>
-<head><title>文件上传和下载</title></head>
-<body><h1>文件上传和下载</h1>
+<head><title>漏管资产数据清洗</title></head>
+<body>
+<h1>
+    上传文件
+</h1>
+<pre style="font-family: Arial, sans-serif;">
+    说明：
+        上传文件的列名必须严格按照过往的列名，否则无法运行。
+        可以先尝试上传，如列名出现不符会有提示信息。
+
+        ip列支持的分隔符号有，,;|
+        端口列支持的分隔符号有，,:;|
+        端口仅保留1-65535之间的，不处于这之间的将直接被舍弃
+
+        支持的ip格式：
+            合法的单个ipv4,ipv6
+            合法的cidr格式的ipv4，如：1.1.1.1/24
+            合法的范围形式的ipv4，如：1.1.1.1-1.1.1.10，1.1.1.1-10
+        除此以外均认为是ip乱码
+</pre>
 <form id="uploadForm" enctype="multipart/form-data">
     <input type="file" id="fileInput" name="file" accept=".xlsx">
     <button type="submit">上传文件</button>
@@ -10,7 +28,18 @@
 <button id="downloadButton" disabled>下载</button>
 <div id="resultMessage"></div>
 
+
 <script>
+    let uploadedFileName = '';
+
+    const fileInput = document.getElementById('fileInput');
+
+    fileInput.addEventListener('change', (event) => {
+        const uploadedFile = event.target.files[0];
+        uploadedFileName = uploadedFile.name;
+        uploadedFileName=uploadedFileName.slice(0, -5);
+    });
+
     document.getElementById("uploadForm").addEventListener("submit", function (event) {
         event.preventDefault(); // 阻止表单的默认提交行为
 
@@ -19,6 +48,9 @@
 
         var formData = new FormData();
         formData.append("file", file);
+
+        const resultMessage = document.getElementById('resultMessage');
+        resultMessage.innerText = '数据处理中，请稍后...';
 
         fetch("/process/", {
             method: "POST",
@@ -41,7 +73,7 @@
                         const url = URL.createObjectURL(fileBlob);
                         const link = document.createElement('a');
                         link.href = url;
-                        link.download = 'processed_files.zip';
+                        link.download = `${uploadedFileName}_处理结果.zip`;
                         link.click();
                         URL.revokeObjectURL(url);
                     });
