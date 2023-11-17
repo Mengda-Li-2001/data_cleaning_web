@@ -285,7 +285,7 @@ def process(request):
 
     except KeyError as keye:
 
-        return JsonResponse({"success": False, "message": "该列不存在："+str(keye).strip("'")+"，请检查所给文件的列名"})
+        return JsonResponse({"success": False, "message": "该列不存在："+str(keye).strip("'")+"，请检查所给文件的列名或没有选择上传文件"})
 
     except Exception as e:
 

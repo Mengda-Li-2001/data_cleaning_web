@@ -34,19 +34,21 @@
 
     const fileInput = document.getElementById('fileInput');
 
+    var file
+
+    var res_file
+
     fileInput.addEventListener('change', (event) => {
-        const uploadedFile = event.target.files[0];
-        uploadedFileName = uploadedFile.name;
+        file = event.target.files[0];
+        uploadedFileName = file.name;
         uploadedFileName=uploadedFileName.slice(0, -5);
     });
 
     document.getElementById("uploadForm").addEventListener("submit", function (event) {
         event.preventDefault(); // 阻止表单的默认提交行为
 
-        var fileInput = document.getElementById("fileInput");
-        var file = fileInput.files[0];
-
         var formData = new FormData();
+
         formData.append("file", file);
 
         const resultMessage = document.getElementById('resultMessage');
@@ -59,29 +61,38 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    const downloadButton = document.getElementById('downloadButton');
                     downloadButton.disabled = false;
-                    downloadButton.addEventListener('click', () => {
-                        const byteCharacters = atob(data.file);
-                        const byteNumbers = new Array(byteCharacters.length);
-                        for (let i = 0; i < byteCharacters.length; i++) {
-                            byteNumbers[i] = byteCharacters.charCodeAt(i);
-                        }
-                        const byteArray = new Uint8Array(byteNumbers);
-
-                        const fileBlob = new Blob([byteArray], {type: 'application/zip'});
-                        const url = URL.createObjectURL(fileBlob);
-                        const link = document.createElement('a');
-                        link.href = url;
-                        link.download = `${uploadedFileName}_处理结果.zip`;
-                        link.click();
-                        URL.revokeObjectURL(url);
-                    });
+                    res_file=data.file
                 }
+                else{
+                    downloadButton.disabled = true;
+                    res_file=""
+                }
+                file=""
+                fileInput.value=""
                 const resultMessage = document.getElementById('resultMessage');
                 resultMessage.innerText = data.message;
             })
             .catch(error => console.error(error));
+    });
+
+    const downloadButton = document.getElementById('downloadButton');
+
+    downloadButton.addEventListener('click', () => {
+        const byteCharacters = atob(res_file);
+        const byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+            byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        const byteArray = new Uint8Array(byteNumbers);
+
+        const fileBlob = new Blob([byteArray], {type: 'application/zip'});
+        const url = URL.createObjectURL(fileBlob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `${uploadedFileName}_处理结果.zip`;
+        link.click();
+        URL.revokeObjectURL(url);
     });
 </script>
 </body>
