@@ -175,26 +175,26 @@ def process(request):
                     if is_valid_ipv4(sstr) or is_valid_ipv6(sstr):  # 合法IPV4或IPV6地址
                         ip_list.append(sstr)
                     elif is_valid_CIDR(sstr):  # 合法CIDR地址
-                        print("-----------------CIDR-----------------")
+                        # print("-----------------CIDR-----------------")
                         ip_list.extend(get_cidr_list(sstr))
                     elif is_ipv4_range(sstr):  # 合法IPV4网段
                         tmp = get_ipv4_range_list(sstr)
                         if len(tmp) == 0:  # IPV4网段中前一个IP严格大于后一个IP，也认为是乱码
-                            print("-----------------IP乱码-----------------")
+                            # print("-----------------IP乱码-----------------")
                             flag_jump = True
                         else:
-                            print("-----------------IPV4网段-----------------")
+                            # print("-----------------IPV4网段-----------------")
                             ip_list.extend(tmp)
                     elif is_ipv4_range_2(sstr):  # 合法第2种ipv4网段
                         tmp = get_ipv4_range_2_list(sstr)
                         if len(tmp) == 0:  # 第2种IPV4网段中前一个IP的最后一位严格大于后一个数字，也认为是乱码
-                            print("-----------------IP乱码-----------------")
+                            # print("-----------------IP乱码-----------------")
                             flag_jump = True
                         else:
-                            print("-----------------第2种IPV4网段-----------------")
+                            # print("-----------------第2种IPV4网段-----------------")
                             ip_list.extend(tmp)
                     else:
-                        print("-----------------IP乱码-----------------")
+                        # print("-----------------IP乱码-----------------")
                         flag_jump = True
             if flag_jump:
                 tmp = []
