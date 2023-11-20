@@ -41,6 +41,22 @@ def get_cidr_list(cidr):    #根据CIDR地址生成对应的ip列表
         ip_list.append(str(ip))
     return ip_list
 
+def is_valid_ipv6_cidr(cidr):      #判断是否为ipv6的CIDR地址
+    try:
+        ipaddress.IPv6Network(cidr,strict=False)
+        return True
+    except ValueError:
+        return False
+
+def get_ipv6_cidr_list(cidr):       #根据ipv6的CIDR地址生成对应的ip列表
+    ipv6_list = []
+    network = ipaddress.IPv6Network(cidr,strict=False)
+    if network.prefixlen < 127:
+        ipv6_list.append(str(ipaddress.IPv6Address(int(network.netmask) & int(list(network.hosts())[0]))))
+    for ip in network.hosts():
+        ipv6_list.append(str(ip))
+    return ipv6_list
+
 def is_ipv4_range(ip_range):    #判断是否为ipv4网段，例：192.168.1.1-192.168.1.10
     # ipv4网段正则表达式
     pattern = r'^((25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])\.){3}(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])-((25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])\.){3}(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])$'
@@ -177,6 +193,9 @@ def process(request):
                     elif is_valid_CIDR(sstr):  # 合法CIDR地址
                         # print("-----------------CIDR-----------------")
                         ip_list.extend(get_cidr_list(sstr))
+                    elif is_valid_ipv6_cidr(sstr):  # 合法ipv6的CIDR地址
+                        # print("-----------------CIDR-----------------")
+                        ip_list.extend(get_ipv6_cidr_list(sstr))
                     elif is_ipv4_range(sstr):  # 合法IPV4网段
                         tmp = get_ipv4_range_list(sstr)
                         if len(tmp) == 0:  # IPV4网段中前一个IP严格大于后一个IP，也认为是乱码
