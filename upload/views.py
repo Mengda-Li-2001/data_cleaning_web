@@ -113,7 +113,10 @@ def upload(request):
 def process(request):
     try:
         # 获取前端传递的 Excel 文件
-        excel_file = request.FILES["file"]
+        try:
+            excel_file = request.FILES["file"]
+        except KeyError:
+            return JsonResponse({"success": False, "message": "未上传文件"})
 
         # 使用 Pandas 读取 Excel 文件
         df = pd.read_excel(excel_file,dtype=str)
@@ -174,7 +177,7 @@ def process(request):
 
         res = dict()  # 存放处理结果，格式为：元组对应列表，元组为聚合条件，列表为用于比较的列的最终结果以及出现次数
 
-        for dic in data_dic:  # 遍历所有行
+        for index,dic in enumerate(data_dic):
             exclude_keys = [IP_ADDRESS, PORT]
             values_dic = {key: value for key, value in dic.items() if
                           key not in exclude_keys}  # 不包含ip和port列的字典部分，用于后续拼接
@@ -231,8 +234,12 @@ def process(request):
                 filtered_port_list = [""]
             else:
                 port_list = list(set(substr.strip() for substr in re.split(r'[，,:;|]', port) if substr.strip()))
-                filtered_port_list = [substr for substr in port_list if
-                                      int(substr) >= 1 and int(substr) <= 65535]  # 拆开port后的列表
+                try:
+                    filtered_port_list = [substr for substr in port_list if
+                                          int(substr) >= 1 and int(substr) <= 65535]  # 拆开port后的列表
+                except ValueError:
+                    return JsonResponse({"success": False, "message": "在第" + str(index + 2) + "行的'" + PORT + "'列处出现了非法内容，请检查表格"})
+
             # print(filtered_port_list)
 
             # 把目标表中不存在的列放进字典，下面不插入聚合值那一列
@@ -241,7 +248,17 @@ def process(request):
             values_dic[WHETHER_TO_TROUBLESHOOT] = ""
             values_dic[REASON_FOR_NOT_TROUBLESHOOTING] = ""
             for i in mapper_columns:
-                if mapper[values_dic[ASSET_TYPE]] == i:
+
+                tmp = values_dic[ASSET_TYPE]
+
+                try:
+                    tmp2 = mapper[tmp]
+                except KeyError:
+                    return JsonResponse({"success": False, "message": "在第"+str(index+2)+"行的'"+ ASSET_TYPE+"'列处出现了非法内容，请检查表格"})
+
+
+                if tmp2 == i:
+
                     values_dic[i] = values_dic[CLEANED_NAME_MANUFACTURER_VERSION]
                 else:
                     values_dic[i] = ""
@@ -304,8 +321,8 @@ def process(request):
 
     except KeyError as keye:
 
-        return JsonResponse({"success": False, "message": "该列不存在："+str(keye).strip("'")+"，请检查所给文件的列名或没有选择上传文件"})
+        return JsonResponse({"success": False, "message": "该列不存在："+str(keye).strip("'")+"，请检查所给文件的列名"})
 
     except Exception as e:
 
-        return JsonResponse({"success": False, "message": "出错："+str(e)})
+        return JsonResponse({"success": False, "message": "未知错误："+str(e)})
