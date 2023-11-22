@@ -104,6 +104,17 @@ def get_ipv4_range_2_list(ip_range):       #生成一个第2种ipv4网段中的�
 
     return ip_range_list
 
+def is_private_ipv4(ip):
+    parts = ip.split('.')
+    if parts[0] == '10':
+        return True
+    elif parts[0] == '172' and 16 <= int(parts[1]) and int(parts[1]) <= 31:
+        return True
+    elif parts[0] == '192' and parts[1] == '168':
+        return True
+    else:
+        return False
+
 
 def upload(request):
     return render(request, "upload.html")
@@ -274,8 +285,17 @@ def process(request):
                                 DATABASE]  # 按照这些列去聚合
             for x in ip_list:
                 for y in filtered_port_list:
+
                     d = {IP_ADDRESS: x, PORT: y}
-                    d.update(values_dic)  # values_dic代表了原先的一行拆开后的每一行
+
+                    d.update(values_dic)    # 更新后d代表了原先的一行拆开后的每一行
+
+                    if is_valid_ipv4(x):
+                        if is_private_ipv4(x):
+                            d[INTERNAL_AND_EXTERNAL_NETWORK_ASSETS]="内网"
+                        else:
+                            d[INTERNAL_AND_EXTERNAL_NETWORK_ASSETS]="互联网"
+
                     result = tuple(d[column] for column in selected_columns)
                     # print(result)
                     if result not in res:
