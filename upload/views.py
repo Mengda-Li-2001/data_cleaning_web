@@ -290,11 +290,11 @@ def process(request):
 
                     d.update(values_dic)    # 更新后d代表了原先的一行拆开后的每一行
 
-                    if is_valid_ipv4(x):
-                        if is_private_ipv4(x):
-                            d[INTERNAL_AND_EXTERNAL_NETWORK_ASSETS]="内网"
-                        else:
-                            d[INTERNAL_AND_EXTERNAL_NETWORK_ASSETS]="互联网"
+                    # if is_valid_ipv4(x):
+                    #     if is_private_ipv4(x):
+                    #         d[INTERNAL_AND_EXTERNAL_NETWORK_ASSETS]="内网"
+                    #     else:
+                    #         d[INTERNAL_AND_EXTERNAL_NETWORK_ASSETS]="互联网"
 
                     result = tuple(d[column] for column in selected_columns)
                     # print(result)
